@@ -1,5 +1,4 @@
 name: CI/CD with Terraform
-
 on:
   push:
     branches:
@@ -16,33 +15,27 @@ env:
 jobs:
   deploy-infra:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup Terraform
+        uses: action/checkout@v2
+      - name: setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 1.4.5  # Specify the version of Terraform if needed
-
-      - name: Terraform Init
-        run: terraform init \
-          -backend-config="bucket=${{ secrets.AWS_TF_STATE_BUCKET_NAME }}" \
-          -backend-config="region=${{ env.AWS_REGION }}"
+          terraform_wrapper: false
+      - name: Terraform init
+        run: terraform init -backend-config="TF_STATE_BUCKET_NAME" -backend-config="AWS_REGION"
         working-directory: ./terraform
-
       - name: Terraform Plan
         id: plan
-        run: terraform plan \
-          -var="region=${{ env.AWS_REGION }}" \
-          -var="public_key=${{ env.PUBLIC_SSH_KEY }}" \
-          -var="private_key=${{ env.PRIVATE_SSH_KEY }}" \
+        run: |-
+          terraform plan \
+          -var="region=us-east-1" \
+          -var="public_key=$PUBLIC_SSH_KEY" \ 
+          -var="private_key=$PRIVATE_SSH_KEY" \
           -var="key_name=deployer-key" \
           -out=PLAN
         working-directory: ./terraform
-
       - name: Terraform Apply
         id: apply
-        run: terraform apply -auto-approve PLAN
+        run: terraform apply PLAN
         working-directory: ./terraform
