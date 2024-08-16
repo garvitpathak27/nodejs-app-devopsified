@@ -15,6 +15,8 @@ env:
 jobs:
   deploy-infra:
     runs-on: ubuntu-latest
+    outputs:
+      SERVER_PUBLIC_IP: ${{ steps.set-ip.outputs.instance_public_ip}}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -23,15 +25,14 @@ jobs:
         with:
           terraform_wrapper: false
       - name: Terraform init
-        run: |
-          terraform init \
-          -backend-config="bucket=${TF_STATE_BUCKET_NAME}" \
-          -backend-config="region=${AWS_REGION}"
+        id: init
+        run: terraform init -backend-config="bucket=$TF_STATE_BUCKET_NAME" -backend-config="region=us-east-1"
+        working-directory: ./terraform
       - name: Terraform Plan
         id: plan
         run: |-
-          terraform plan \
-          -var="region=$AWS_REGION" \
+          terraform plan -destroy \
+          -var="region=us-east-1" \
           -var="public_key=$PUBLIC_SSH_KEY" \
           -var="private_key=$PRIVATE_SSH_KEY" \
           -var="key_name=deployer-key" \
@@ -41,3 +42,4 @@ jobs:
         id: apply
         run: terraform apply PLAN
         working-directory: ./terraform
+      
