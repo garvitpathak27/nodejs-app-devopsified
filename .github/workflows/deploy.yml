@@ -23,8 +23,10 @@ jobs:
         with:
           terraform_wrapper: false
       - name: Terraform init
-        run: terraform init -backend-config="TF_STATE_BUCKET_NAME" -backend-config="AWS_REGION"
-        working-directory: ./node_app/terraform
+        run: |
+          terraform init \
+          -backend-config="bucket=${TF_STATE_BUCKET_NAME}" \
+          -backend-config="region=${AWS_REGION}"
       - name: Terraform Plan
         id: plan
         run: |-
