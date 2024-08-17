@@ -62,8 +62,9 @@ jobs:
       - name: Build, push Docker image
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: ec2-example-app-terraform-state-bucket
+          REPOSITORY: example-node-app
           IMAGE_TAG: ${{ github.sha }}
+          AWS_DEFAULT_REGION: us-east-1
         run: |-
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
@@ -71,7 +72,7 @@ jobs:
       - name: Deploy Docker image to EC2
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: ec2-example-app-terraform-state-bucket
+          REPOSITORY: example-node-app
           IMAGE_TAG: ${{ github.sha }}
           AWS_DEFAULT_REGION: us-east-1
         uses: appleboy/ssh-action@master
@@ -88,4 +89,4 @@ jobs:
             sudo docker stop myappcontainer || true
             sudo docker rm myappcontainer || true
             sudo docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
-            sudo docker run -d --name myappcontainer -p 80:8080 $REGISTRY/$REPOSITORY:$IMAGE_TAG
+            sudo docker run -d --name myappcontainer -p 80:808  $REGISTRY/$REPOSITORY:$IMAGE_TAG
